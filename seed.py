@@ -7,6 +7,7 @@ Coordinates the individual seed functions for each record type.
 from database import Session
 from seed_data.seed_disciplines import seed_disciplines
 from seed_data.seed_tags import seed_tags
+from seed_data.seed_abilities import seed_abilities
 from seed_data.seed_traits import seed_traits
 from seed_data.seed_weapons import seed_weapons
 from seed_data.seed_armors import seed_armors
@@ -24,6 +25,7 @@ def seed_database(db):
     """
     seed_disciplines(db)
     seed_tags(db)
+    seed_abilities(db)
     seed_traits(db)
     seed_weapons(db)
     seed_armors(db)
