@@ -35,6 +35,7 @@ The current backend supports records for:
 - Traits: Keywords assigned to weapons and armor to give them additional effects and functionality
 
 ## Project Structure
+```text
 rpg-database/
 ├──helpers/
 │   ├──__init__.py
@@ -91,7 +92,7 @@ rpg-database/
 ├──README.md
 ├──reset_db.py
 └──seed.py
-
+```
 ## Architecture
 The project is separated into several layers:
 
