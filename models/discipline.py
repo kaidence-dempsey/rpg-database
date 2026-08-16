@@ -20,7 +20,8 @@ class Discipline(Base):
     __tablename__ = "disciplines"
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
-    anima = Column(Boolean, default=False) #does this discipline require the use of anima or is it a skill-based discipline? 
-    philosophy = Column(String) #Will only be used if the anima variable is TRUE, otherwise it will be empty and not printed
     description = Column(String)
+    anima = Column(Boolean, default=False) #does this discipline require the use of anima or is it a skill-based discipline? 
+    philosophy = Column(String, default=None) #Will only be used if the anima variable is TRUE, otherwise it will be empty and not printed
+
     abilities = relationship("Ability",back_populates="discipline")

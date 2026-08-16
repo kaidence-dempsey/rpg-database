@@ -92,10 +92,10 @@ def create_discipline_tool(db):
 
     discipline = disciplines.create_discipline(
         db,
-        name,
-        anima,
-        philosophy,
-        description
+        name=name,
+        anima=anima,
+        philosophy=philosophy,
+        description=description
     )
 
     if discipline:

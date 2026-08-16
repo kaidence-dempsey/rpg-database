@@ -10,7 +10,7 @@ from sqlalchemy.exc import IntegrityError
 #-----------
 # CREATE
 #-----------
-def create_discipline(db, name, anima, philosophy, description):
+def create_discipline(db, name, description, anima=False, philosophy = None):
     """
     Creates a new Discipline record in the database.
 
@@ -26,11 +26,18 @@ def create_discipline(db, name, anima, philosophy, description):
     """
     discipline = Discipline(
     name=name.title(),
+    description=description,
     anima=anima,
     philosophy=philosophy,
-    description=description
+
     )
 
+    if anima and philosophy is None:
+        db.rollback()
+        raise ValueError("Anima disciplines require a philosophy.")
+    if not anima and philosophy is not None:
+        db.rollback()
+        raise ValueError("Non-Anima disciplines cannot have a philosophy.")
     
     db.add(discipline)
     try:
@@ -136,7 +143,12 @@ def update_discipline(db, discipline_id, **kwargs):
             setattr(discipline,key,value)
         else:
              raise ValueError(f"Invalid Field: {key}")
-        
+
+    if discipline.anima and discipline.philosophy is None:
+        raise ValueError("Anima disciplines require a philosophy.")
+    if not discipline.anima and discipline.philosophy is not None:
+        raise ValueError("Non-Anima disciplines cannot have a philosophy.")
+    
     try:
         db.commit()
         db.refresh(discipline)
@@ -172,7 +184,7 @@ def delete_discipline(db, discipline_id):
     ability_exists = (db.query(Ability).filter(Ability.discipline_id == discipline_id).first())
 
     if ability_exists:
-        raise ValueError("Cannot Delete a Discipline wthat still has assigned Abilities.")
+        raise ValueError("Cannot Delete a Discipline that still has assigned Abilities.")
 
     else:
         db.delete(discipline)
