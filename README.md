@@ -8,6 +8,8 @@ The eventual goal is to provide the backend for a web application where users ca
 add homebrew content, and use an integrated dice roller.
 
 ## Current Status
+In Active Development - v1 implementation underway 
+
 The core database backend is currently implemented, manually CRUD tested, and is currently being equipped with automatic CRUD tests.
 
 ### Implemented
