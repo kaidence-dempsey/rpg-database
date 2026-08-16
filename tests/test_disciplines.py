@@ -1,6 +1,7 @@
 """
 Tests the Discipline service layer, including CRUD operations, validation, and relationship constraints.
 """
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 from services import disciplines
@@ -130,7 +131,7 @@ def test_get_all_disciplines(db):
     }
 
 def test_get_nonexistent_discipline(db):
-    """ Test that an invalid ID raises a ValueError. """
+    """ Test that an invalid ID returns None. """
     result = disciplines.get_discipline_by_id(db, 100)
 
     assert result is None
@@ -298,8 +299,8 @@ def test_update_discipline_duplication_prevention(db):
     assert updated is None
     assert discipline1.name == "Test Discipline"
 
-def test_update_invalid_discipline_id(db):
-    """ Test that entering an invalid Discipline ID raises a ValueError. """
+def test_update_nonexistent_discipline(db):
+    """ Test that entering an invalid Discipline ID returns None. """
     result = disciplines.update_discipline(
             db=db,
             discipline_id = 100,
