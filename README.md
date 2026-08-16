@@ -1,5 +1,5 @@
 # RPG Database
-A Python and SQLAlchemy backend for managing the data and character options of a tabletop role-playing game system.
+A Python and SQLAlchemy backend for managing the data and character options of a homebrew tabletop role-playing game system.
 
 This project is being developed as a portfolio project to demonstrate database design, Python development, SQLAlchemy ORM usage,
 CRUD operations, relational data modeling, and application architecture.
@@ -8,7 +8,7 @@ The eventual goal is to provide the backend for a web application where users ca
 add homebrew content, and use an integrated dice roller.
 
 ## Current Status
-The core database backend is currently implemented and undergoing CRUD testing.
+The core database backend is currently implemented, manually CRUD tested, and is currently being equipped with automatic CRUD tests.
 
 ### Implemented
 - SQLAlchemy ORM database models
@@ -85,7 +85,11 @@ rpg-database/
 │   │  tags.py
 │   │  traits.py
 │   └──weapons.py  
-│ 
+│
+├──tests/
+│   ├──__init__.py
+│   └──test_disciplines.py
+│
 ├──database.py
 ├──main.py
 ├──.gitignore
@@ -111,6 +115,10 @@ Provide reusable input validation and utilities for adding and removing Tags and
 ### Seed Data
 Provides predefined development and testing data without requiring the user to manually enter records through the console interface.
 
+### Tests
+Provides automatic CRUD testing for the service functions.
+
+
 This separation is intended to make the backend reusable when the console interface is eventually replaced by an API and web frontend.
 
 ## Technologies
@@ -128,24 +136,22 @@ Install dependencies with:
 pip install sqlalchemy
 
 ### Run the application
+For the first time running the application:
+
+python reset_db.py
+
 python main.py
 
 The current application provides a console-based interface for creating, viewing, searching, updating, and deleting database records.
-
-### Reset the database
-The database can be completely rebuilt using:
-python reset_db.py
-
-This removes the existing database if it exists, recreates the tables, and populates the database with the standard developmental seed data.
+The reset_db.py is used to both initialize the database tables for the first use, but can also be re-run to reset the database to its original state with the seed data.
 
 ## Testing
-CRUD operations are currently being tested through the console interface.
+Manual CRUD testing has been done, and the application is currently undergoing development of automatic CRUD testing.
 
-Testing focuses on:
+Automatic testing focuses on:
 - Creating records
 - Retrieving individual and multiple records
-- Searching records
-- Updating records
+- Updating single fields within records.
 - Deleting records
 - Handling invalid input
 - Handling duplicate records
@@ -153,15 +159,11 @@ Testing focuses on:
 - Removing associations when related records are deleted
 - Preventing deletion when required relationships still exist
 
-Automated tests are planned as the backend develops.
-
 ## Planned Development
 This project is intentionally being developed in stages.
 
 ### Phase 1 - Backend
-- Finish CRUD testing
-- Complete seed data
-- Add automated tests
+- Finish adding automated tests
 - Refine database relationships and validation
 
 ### Phase 2 - API
@@ -198,8 +200,9 @@ A virtual tabletop component may eventually be added, including features such as
 The initial goal is to build a clean, demonstrable application before expanding into more complex tabletop functionality.
 
 ## About the Project
-This project began as a way to build a practical software portfolio around a tabletop RPG system while developing 
+This project began as a way to build a practical software portfolio around my own tabletop RPG system while developing 
 experience with relational databases, backend architecture, APIs, and frontend development.
 
 The scope is intentionally being kept manageable during the initial development phase. The first complete version 
 will prioritize demonstrating software development skills over implementing every nuance of the underlying RPG ruleset.
+The current seed data provided to the database reflects this priority, as it is intentionally left simple.
