@@ -118,7 +118,7 @@ Provide reusable input validation and utilities for adding and removing Tags and
 Provides predefined development and testing data without requiring the user to manually enter records through the console interface.
 
 ### Tests
-Provides automatic CRUD testing for the service functions.
+Provides automatic CRUD testing for the service functions. Automated tests use pytest and an isolated test database so that test operations do not modify the development database.
 
 
 This separation is intended to make the backend reusable when the console interface is eventually replaced by an API and web frontend.
@@ -128,6 +128,7 @@ This separation is intended to make the backend reusable when the console interf
 - SQLAlchemy
 - SQLite
 - Git/GitHub
+- pytest
 
 ## Running the Project
 ### Requirements
@@ -145,15 +146,15 @@ python reset_db.py
 python main.py
 
 The current application provides a console-based interface for creating, viewing, searching, updating, and deleting database records.
-The reset_db.py is used to both initialize the database tables for the first use, but can also be re-run to reset the database to its original state with the seed data.
+reset_db.py is used to both initialize the database tables for the first use, but can also be re-run to reset the database to its original state with the seed data.
 
 ## Testing
-Manual CRUD testing has been done, and the application is currently undergoing development of automatic CRUD testing.
+Manual CRUD testing has been done, and the application is currently undergoing development of automated CRUD testing.
 
-Automatic testing focuses on:
+Automated testing focuses on:
 - Creating records
 - Retrieving individual and multiple records
-- Updating single fields within records.
+- Updating individual fields.
 - Deleting records
 - Handling invalid input
 - Handling duplicate records
