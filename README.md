@@ -90,8 +90,10 @@ rpg-database/
 │
 ├──tests/
 │   ├──__init__.py
+│   ├──conftest.py
 │   ├──test_disciplines.py
-│   └──test_tags.py
+│   ├──test_tags.py
+│   └──test_traits.py
 │
 ├──database.py
 ├──main.py
