@@ -16,7 +16,7 @@ def test_create_tag(db):
 
     assert tag.name == "Test Tag"
 
-def test_create_duplicate_prevention(db):
+def test_create_tag_duplicate_prevention(db):
     """ Test that a new Tag record cannot have the same name as an existing Tag. """
     tags.create_tag(
         db=db,
