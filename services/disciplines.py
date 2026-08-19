@@ -18,7 +18,7 @@ def create_discipline(db, name, description, anima=False, philosophy = None):
         db: SQLAlchemy session.
         name: Name of the new Discipline.
         anima: Whether the Discipline uses anima.
-        philosophy: If it uses anima, what is the philosophical framework of the Discipline.
+        philosophy: If it uses anima, what is the philosophical framework of the Discipline, otherwise None.
         description: the lore description of the Discipline.
 
     Returns:
@@ -33,10 +33,8 @@ def create_discipline(db, name, description, anima=False, philosophy = None):
     )
 
     if anima and philosophy is None:
-        db.rollback()
         raise ValueError("Anima disciplines require a philosophy.")
     if not anima and philosophy is not None:
-        db.rollback()
         raise ValueError("Non-Anima disciplines cannot have a philosophy.")
     
     db.add(discipline)

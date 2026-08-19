@@ -23,7 +23,7 @@ def create_ability(
     resource_type,
     resource_cost, 
     discipline_id,
-    tag_names #This will be list[str]
+    tags # A list of Tag objects
 ):
     """
     Creates a new Ability record in the database.
@@ -41,7 +41,7 @@ def create_ability(
         resource_type: The type of resource expended when the Ability is used. Can be None.
         resource_cost: The amount of resource_type that is spent when the Ability is used. Is None if resource_type is None.
         discipline_id: The primary key of an existing Discipline associated with the Ability.
-        tag_names: A list of Tag names associated with the Ability.
+        tags: A list of Tag objects associated with the Ability.
 
     Returns:
         The newly created Ability object, or None if an ability with the same name already exists.
@@ -60,8 +60,21 @@ def create_ability(
         discipline_id=discipline_id,
     )  
 
+    # Validate Ability rules
+    if has_roll and (partial_effect is None or crit_effect is None):
+        raise ValueError("Abilities with rolls require partial and critical effects.")
 
-    ability.tags = tag_names
+    if not has_roll and (partial_effect is not None or crit_effect is not None):
+        raise ValueError("Abilities without rolls cannot have partial or critical effects.")
+
+    if resource_type is not None and resource_cost is None:
+        raise ValueError("A resource type requires a resource cost.")
+
+    if resource_type is None and resource_cost is not None:
+        raise ValueError("A resource cost requires a resource type.")
+
+    ability.tags = tags
+
 
     db.add(ability)
     try:

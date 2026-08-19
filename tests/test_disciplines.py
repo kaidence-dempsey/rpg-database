@@ -3,7 +3,6 @@ Tests the Discipline service layer, including CRUD operations, validation, and r
 """
 
 import pytest
-from sqlalchemy.exc import IntegrityError
 from services import disciplines
 from services import abilities
 
@@ -59,7 +58,7 @@ def test_create_nonanima_with_philosophy(db):
             description = "Test description"
         )
 
-def test_create_duplicate_prevention(db):
+def test_create_discipline_duplicate_prevention(db):
     """ Test that a new Discipline record cannot have the same name as an existing Discipline. """
 
     disciplines.create_discipline(
@@ -98,11 +97,17 @@ def test_get_discipline_by_id(db):
     assert retrieved.philosophy is None
     assert retrieved.description == "Test description"
 
+def test_get_nonexistent_discipline(db):
+    """ Test that an invalid ID returns None. """
+    result = disciplines.get_discipline_by_id(db, 100)
+
+    assert result is None
+
 def test_get_all_disciplines(db):
     """ Test that all Discipline Records can be retrieved. """
     discipline1 = disciplines.create_discipline(
         db=db,
-        name = "Test Discipline",
+        name = "Test Discipline 1",
         philosophy = None,
         description = "Test description"
     )
@@ -125,16 +130,59 @@ def test_get_all_disciplines(db):
 
     assert len(retrieved) == 3
     assert {d.name for d in retrieved} == {
-        "Test Discipline",
+        "Test Discipline 1",
         "Test Discipline 2",
         "Test Discipline 3"
     }
 
-def test_get_nonexistent_discipline(db):
-    """ Test that an invalid ID returns None. """
-    result = disciplines.get_discipline_by_id(db, 100)
+def test_get_anima_disciplines(db):
+    """Test that only Anima Disciplines are retrieved."""
+    disciplines.create_discipline(
+        db=db,
+        name="Test Anima",
+        anima=True,
+        philosophy="Test philosophy",
+        description="Test description"
+    )
 
-    assert result is None
+    disciplines.create_discipline(
+        db=db,
+        name="Test Non-Anima",
+        anima=False,
+        philosophy=None,
+        description="Test description"
+    )
+
+    retrieved = disciplines.get_disciplines_by_anima(db, True)
+
+    assert len(retrieved) == 1
+    assert retrieved[0].name == "Test Anima"
+    assert retrieved[0].anima is True
+
+def test_get_non_anima_disciplines(db):
+    """Test that only non-Anima Disciplines are retrieved."""
+    disciplines.create_discipline(
+        db=db,
+        name="Test Anima",
+        anima=True,
+        philosophy="Test philosophy",
+        description="Test description"
+    )
+
+    disciplines.create_discipline(
+        db=db,
+        name="Test Non-Anima",
+        anima=False,
+        philosophy=None,
+        description="Test description"
+    )
+
+    retrieved = disciplines.get_disciplines_by_anima(db, False)
+
+    assert len(retrieved) == 1
+    assert retrieved[0].name == "Test Non-Anima"
+    assert retrieved[0].anima is False
+
 #----------------
 # UPDATING TESTS
 #----------------
@@ -358,7 +406,7 @@ def test_delete_associated_discipline(db):
         resource_type = None,
         resource_cost = None,
         discipline_id = discipline.id,
-        tag_names = []
+        tags = []
     )
 
     with pytest.raises(ValueError):
