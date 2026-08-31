@@ -492,3 +492,35 @@ def test_get_abilities_by_no_matching_tag(db):
 
     assert result == []
 
+#-----------------
+# UPDATE TESTS
+#-----------------
+# def test_update_ability(db):
+#   This will test updating the name, effect, xp_cost, ap_cost, momentum_cost.
+
+# def test_update_ability_discipline_id(db):
+#   This will test updating associated discipline.
+
+# def test_update_ability_nonexistent_discipline_id(db):
+#   This will test updating the associated discipline id wont work if the new discipline is invalid.
+
+# def test_update_ability_xp_cost_negative(db):
+#   This will test that an XP Cost cannot be negative.
+
+# def test_update_ability_xp_cost_zero(db):
+#   This will test that an XP Cost cannot be 0.
+
+# def test_update_ability_ap_cost_negative(db):
+#   This will test that an AP Cost cannot be negative.
+
+# def test_update_ability_momentum_cost_negative(db):
+#   This will test that a Momentum Cost cannot be negative.
+
+# def test_update_ability_resource_type_and_cost_from_none(db):
+#   This will test updating both resource type and cost from None will work.
+
+# def test_update_ability_resource_type_and_cost_to_none(db):
+#   This will test updating both resource type and cost to None will work.
+
+# def test_update_ability_resource_type_from_none_without_cost(db):
+#   This will test updating just the resource type from None will fail, as the cost would still be None

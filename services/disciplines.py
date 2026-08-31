@@ -10,33 +10,49 @@ from sqlalchemy.exc import IntegrityError
 #-----------
 # CREATE
 #-----------
-def create_discipline(db, name, description, anima=False, philosophy = None):
+def create_discipline(db, name, description, anima=False, philosophy=None):
     """
     Creates a new Discipline record in the database.
 
     Args:
         db: SQLAlchemy session.
         name: Name of the new Discipline.
+        description: the lore description of the Discipline.
         anima: Whether the Discipline uses anima.
         philosophy: If it uses anima, what is the philosophical framework of the Discipline, otherwise None.
-        description: the lore description of the Discipline.
 
     Returns:
         The newly created Discipline object, or None if a discipline with the same name already exists.
+    
+    Raises:
+        ValueError: if required field is left blank or field logic is not followed.
     """
+
+    #--------------------------------------
+    # REQUIRED FIELDS INPUT VALIDITY CHECK.
+    #--------------------------------------
+    # whitespace, "", and None are all invalid.
+    if not name or not name.strip() or not description or not description.strip(): 
+        raise ValueError("Missing one or more required fields.")
+
+    if not isinstance(anima, bool):
+        raise ValueError("Anima must be True or False.")
+    
+    if anima and (not philosophy or not philosophy.strip()):
+        raise ValueError("Anima disciplines require a philosophy.")
+    
+    if not anima and philosophy is not None:
+        raise ValueError("Non-Anima disciplines cannot have a philosophy.")
+
+    # CREATION OF DISCIPLINE OBJECT.
     discipline = Discipline(
     name=name.title(),
     description=description,
     anima=anima,
     philosophy=philosophy,
-
     )
 
-    if anima and philosophy is None:
-        raise ValueError("Anima disciplines require a philosophy.")
-    if not anima and philosophy is not None:
-        raise ValueError("Non-Anima disciplines cannot have a philosophy.")
-    
+    # ADD UNLESS NAME IS ALREADY PRESENT IN DATABASE.
     db.add(discipline)
     try:
         db.commit()
@@ -127,26 +143,53 @@ def update_discipline(db, discipline_id, **kwargs):
         The updated Discipline object, or None if not found, or the updated name already exists.
 
     Raises:
-        ValueError: If an invalid field is provided in kwargs.
+        ValueError: If an invalid field is provided in kwargs, or the resulting field logic is invalid.
     """
     discipline = db.query(Discipline).filter(Discipline.id == discipline_id).first()
-        
+
     if not discipline:
         return None
-        
+
+    #-----------------------
+    # VALIDATE FIELD NAMES
+    #-----------------------
     allowed_fields = {"name", "anima", "philosophy", "description"}
 
-    for key, value in kwargs.items():
-        if key in allowed_fields:
-            setattr(discipline,key,value)
-        else:
-             raise ValueError(f"Invalid Field: {key}")
+    for key in kwargs:
+        if key not in allowed_fields:
+            raise ValueError(f"Invalid Field: {key}")
 
+    #-----------------------
+    # UPDATE PROVIDED FIELDS
+    #-----------------------
+    for key, value in kwargs.items():
+        if value == "":
+            continue
+
+        if key in {"name", "description"}:
+            if value is None or not value.strip():
+                raise ValueError(f"{key.title()} cannot be whitespace or None.")
+
+        if key == "anima":
+            if value is None or not isinstance(value, bool):
+                raise ValueError("Anima must be True or False.")
+
+        if key == "name":
+            value = value.title()
+
+        setattr(discipline, key, value)
+
+    #-----------------------------------
+    # RESULTING FIELD LOGIC VALIDATION
+    #-----------------------------------
     if discipline.anima and discipline.philosophy is None:
+        db.rollback()
         raise ValueError("Anima disciplines require a philosophy.")
     if not discipline.anima and discipline.philosophy is not None:
+        db.rollback()
         raise ValueError("Non-Anima disciplines cannot have a philosophy.")
-    
+
+    # UPDATE UNLESS ENTERED UPDATED NAME IS ALREADY PRESENT IN DATABASE.   
     try:
         db.commit()
         db.refresh(discipline)
