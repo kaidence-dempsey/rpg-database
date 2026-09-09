@@ -20,10 +20,20 @@ def create_tag(db, name):
     Returns:
         The newly created Tag object, or None if a tag with the same name already exists.
     """
+
+    #--------------------------------------
+    # REQUIRED FIELD INPUT VALIDITY CHECK.
+    #--------------------------------------
+    # whitespace, "", and None are all invalid.
+    if not name or not name.strip(): 
+        raise ValueError("Missing name.")
+
+    #CREATION OF TAG OBJECT
     tag = Tag(
         name=name.title()
     )
-    
+
+    # ADD UNLESS NAME IS ALREADY PRESENT IN DATABASE.
     db.add(tag)
     try:
         db.commit()
@@ -98,9 +108,19 @@ def update_tag(db, tag_id, new_name):
         
     if not tag:
         return None
-    
+
+    #-----------------------
+    # VALIDATE FIELD INPUT
+    #-----------------------
+    if new_name == "": # Skipping name field, which is the only field.
+        return None
+    elif not new_name or not new_name.strip(): # If name is None or empty whitespace: "   ".
+        raise ValueError("Name cannot be blank or None")
+
+    # UPDATE TAG OBJECT
     tag.name=new_name.title()
-    
+
+    # UPDATE UNLESS UPDATED NAME IS ALREADY IN DATABASE.
     try:
         db.commit()
         db.refresh(tag)

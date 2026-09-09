@@ -29,6 +29,23 @@ def create_equipment(
     Returns:
         The newly created Equipment object, or None if an equipment with the same name already exists.
     """
+
+    #--------------------------------------
+    # REQUIRED FIELDS INPUT VALIDITY CHECK.
+    #--------------------------------------
+    # whitespace, "", and None are all invalid.
+    if not name or not name.strip() or not description or not description.strip(): 
+        raise ValueError("Missing one or more required fields.")
+
+    # Non-integer inputs, boolean values, and negative integers are all invalid.
+    if not isinstance(price, int) or isinstance(price, bool) or price < 0:
+        raise ValueError("Price must be a non-negative integer.")
+
+    # Non-integer inputs, boolean values, and negative integers are all invalid.
+    if not isinstance(weight, int) or isinstance(weight, bool) or weight < 0:
+        raise ValueError("Weight must be a non-negative integer.")
+
+    # CREATION OF EQUIPMENT OBJECT    
     equipment = Equipment(
         name=name.title(),
         description=description,
@@ -36,6 +53,7 @@ def create_equipment(
         price=price
     )
 
+    # ADD UNLESS NAME IS ALREADY PRESENT IN DATABASE.
     db.add(equipment)
     try:
         db.commit()
@@ -46,8 +64,6 @@ def create_equipment(
         db.rollback()
         return None
     
-
-
 #-----------
 # READ ALL
 #----------
@@ -113,21 +129,40 @@ def update_equipment(db, equipment_id, **kwargs):
         The updated Equipment object, or None if not found, or the updated name already exists.
 
     Raises:
-        ValueError: If an invalid field is provided in kwargs.
+        ValueError: If an invalid field or field value is provided in kwargs.
     """
     equipment = db.query(Equipment).filter(Equipment.id == equipment_id).first()
         
     if not equipment:
         return None
-    
+
+    #-----------------------
+    # VALIDATE FIELD NAMES
+    #-----------------------  
     allowed_fields = {"name", "description", "price", "weight"}
 
+    for key in kwargs:
+        if key not in allowed_fields:
+            raise ValueError(f"Invalid Field: {key}")
+
+    #-----------------------
+    # UPDATE PROVIDED FIELDS
+    #-----------------------
     for key, value in kwargs.items():
-        if key in allowed_fields:
-            setattr(equipment,key,value)
-        else:
-             raise ValueError(f"Invalid Field: {key}")
-        
+        if value == "":
+            continue
+
+        if key in {"name", "description"}:
+            if value is None or not value.strip():
+                raise ValueError(f"{key.title()} cannot be whitespace or None.")
+
+        if key in {"price", "weight"}:
+            if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                raise ValueError(f"{key.title()} must be a non-negative integer.")     
+
+        setattr(equipment, key, value)
+
+    # UPDATE UNLESS ENTERED UPDATED NAME IS ALREADY PRESENT IN DATABASE.      
     try:
         db.commit()
         db.refresh(equipment)

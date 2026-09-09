@@ -143,7 +143,7 @@ def update_discipline(db, discipline_id, **kwargs):
         The updated Discipline object, or None if not found, or the updated name already exists.
 
     Raises:
-        ValueError: If an invalid field is provided in kwargs, or the resulting field logic is invalid.
+        ValueError: If an invalid field or field value is provided in kwargs.
     """
     discipline = db.query(Discipline).filter(Discipline.id == discipline_id).first()
 

@@ -21,11 +21,21 @@ def create_trait(db,name,effect):
     Returns:
         The newly created Trait object, or None if a trait with the same name already exists.
     """
+
+    #--------------------------------------
+    # REQUIRED FIELDS INPUT VALIDITY CHECK.
+    #--------------------------------------
+    # whitespace, "", and None are all invalid.
+    if not name or not name.strip() or not effect or not effect.strip():
+        raise ValueError("Missing one or more required fields.")
+
+    # CREATION OF TRAIT OBJECT
     trait = Trait(
         name=name.title(),
         effect=effect
     )
-    
+
+    # ADD UNLESS NAME IS ALREADY PRESENT IN DATABASE.
     db.add(trait)
     try:
         db.commit()
@@ -106,15 +116,33 @@ def update_trait(db, trait_id, **kwargs):
         
     if not trait:
         return None
-    
+
+    #-----------------------
+    # VALIDATE FIELD NAMES
+    #-----------------------
     allowed_fields = {"name", "effect"}
 
-    for key, value in kwargs.items():
-        if key in allowed_fields:
-            setattr(trait,key,value)
-        else:
+    for key in kwargs:
+        if key not in allowed_fields:
              raise ValueError(f"Invalid Field: {key}")
-        
+
+    #-----------------------
+    # UPDATE PROVIDED FIELDS
+    #-----------------------
+    for key, value in kwargs.items():
+        if value == "":
+            continue
+
+        if key in {"name", "effect"}:
+            if value is None or not value.strip():
+                raise ValueError(f"{key.title()} cannot be whitespace or None.")
+
+        if key == "name":
+            value = value.title()
+
+        setattr(trait, key, value)
+
+    # UPDATE UNLESS ENTERED UPDATED NAME IS ALREADY PRESENT IN DATABASE.
     try:
         db.commit()
         db.refresh(trait)
