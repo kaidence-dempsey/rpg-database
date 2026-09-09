@@ -2,6 +2,7 @@
 Tests the Tags service layer, including CRUD operations and validation.
 """
 
+import pytest
 from services import tags
 
 #--------------
@@ -15,6 +16,16 @@ def test_create_tag(db):
     )
 
     assert tag.name == "Test Tag"
+
+@pytest.mark.parametrize("invalid_name", [None, "", "   "])
+def test_create_tag_invalid_name(db,invalid_name):
+    """ Test that creating a new Tag with an invalid name imput raises a ValueError. """
+    with pytest.raises(ValueError):
+        tags.create_tag(
+            db=db,
+            name=invalid_name
+        )
+
 
 def test_create_tag_duplicate_prevention(db):
     """ Test that a new Tag record cannot have the same name as an existing Tag. """
@@ -94,6 +105,21 @@ def test_update_tag(db):
     )
 
     assert updated.name == "New Name"
+
+@pytest.mark.parametrize("invalid_name", [None, "   "])
+def test_update_tag_invalid_name(db,invalid_name):
+    """ Test that updating a Tag with an invalid name imput raises a ValueError. """
+    tag = tags.create_tag(
+        db=db,
+        name = "Test Tag"
+    )
+
+    with pytest.raises(ValueError):
+        tags.update_tag(
+        db=db,
+        tag_id = tag.id,
+        new_name=invalid_name
+        )
 
 def test_update_tag_duplicate_prevention(db):
     """ Test that a Tag record cannot be updated to have the same name as an existing Tag. """

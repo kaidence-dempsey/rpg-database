@@ -60,7 +60,7 @@ def test_create_anima_without_philosophy(db):
 
 @pytest.mark.parametrize("name", [None, "", "   "])
 def test_create_discipline_invalid_name(db,name):
-    """ Test that creating a Discipline with an invalid name raises ValueError. """
+    """ Test that creating a Discipline with an invalid name raises a ValueError. """
     with pytest.raises(ValueError):
         disciplines.create_discipline(
             db=db,
@@ -71,7 +71,7 @@ def test_create_discipline_invalid_name(db,name):
 
 @pytest.mark.parametrize("description", [None, "", "   "])
 def test_create_discipline_invalid_description(db,description):
-    """ Test that creating a Discipline with an invalid description raises ValueError. """
+    """ Test that creating a Discipline with an invalid description raises a ValueError. """
     with pytest.raises(ValueError):
         disciplines.create_discipline(
             db=db,
@@ -82,7 +82,7 @@ def test_create_discipline_invalid_description(db,description):
 
 @pytest.mark.parametrize("anima", [None, "", "   ", "Test", 1, 0])
 def test_create_discipline_invalid_anima(db,anima):
-    """  Test that creating a Discipline with an invalid anima raises ValueError. """
+    """  Test that creating a Discipline with an invalid anima raises a ValueError. """
     with pytest.raises(ValueError):
         disciplines.create_discipline(
             db=db,
@@ -94,7 +94,7 @@ def test_create_discipline_invalid_anima(db,anima):
 
 @pytest.mark.parametrize("philosophy", ["", "   "])
 def test_create_discipline_invalid_philosophy(db,philosophy):
-    """  Test that creating a Discipline with an invalid philosophy raises ValueError. """
+    """  Test that creating a Discipline with an invalid philosophy raises a ValueError. """
     with pytest.raises(ValueError):
         disciplines.create_discipline(
             db=db,
@@ -150,7 +150,7 @@ def test_get_nonexistent_discipline(db):
     assert result is None
 
 def test_get_all_disciplines(db):
-    """ Test that all Discipline Records can be retrieved. """
+    """ Test that all Discipline records can be retrieved. """
     discipline1 = disciplines.create_discipline(
         db=db,
         name = "Test Discipline 1",

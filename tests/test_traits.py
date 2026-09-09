@@ -2,6 +2,7 @@
 Tests the Traits service layer, including CRUD operations and validation.
 """
 
+import pytest
 from services import traits
 
 #--------------
@@ -12,25 +13,45 @@ def test_create_trait(db):
     trait = traits.create_trait(
         db=db,
         name = "Test Trait",
-        effect = "Test Effect"
+        effect = "Test effect"
     )
 
     assert trait.name == "Test Trait"
-    assert trait.effect == "Test Effect"
+    assert trait.effect == "Test effect"
+
+@pytest.mark.parametrize("invalid_name", [None, "", "    "])
+def test_create_trait_invalid_name(db,invalid_name):
+    """ Test that creating a new Trait with an invalid name input raises a ValueError. """
+    with pytest.raises(ValueError):
+        traits.create_trait(
+            db=db,
+            name=invalid_name,
+            effect = "Test effect"
+        )
+
+@pytest.mark.parametrize("invalid_effect", [None, "", "    "])
+def test_create_trait_invalid_name(db,invalid_effect):
+    """ Test that creating a new Trait with an invalid effect input raises a ValueError. """
+    with pytest.raises(ValueError):
+        traits.create_trait(
+            db=db,
+            name = "Test Trait",
+            effect = invalid_effect
+        )
 
 def test_create_trait_duplicate_prevention(db):
     """ Test that a new Trait record cannot have the same name as an existing Trait. """
     traits.create_trait(
         db=db,
-        name = "Test Duplicate",
-        effect = "Test Effect"
+        name = "Test duplicate",
+        effect = "Test effect"
     )
 
     #service handles IntegrityError, so if this returns None it raised the IntegrityError
     duplicate = traits.create_trait(
             db=db,
-            name = "Test Duplicate",
-            effect = "Test Effect"
+            name = "Test duplicate",
+            effect = "Test effect"
         )
 
     assert duplicate is None
@@ -43,32 +64,32 @@ def test_get_trait_by_id(db):
     trait = traits.create_trait(
         db=db,
         name = "Test Trait",
-        effect = "Test Effect"
+        effect = "Test effect"
     )
 
     retrieved = traits.get_trait_by_id(db, trait.id)
 
     assert retrieved.name == "Test Trait"
-    assert retrieved.effect == "Test Effect"
+    assert retrieved.effect == "Test effect"
 
 def test_get_all_traits(db):
     """ Test that all Trait records can be retrieved. """
     trait1 = traits.create_trait(
         db=db,
         name = "Test Trait 1",
-        effect = "Test Effect 1"
+        effect = "Test effect 1"
     )
 
     trait2 = traits.create_trait(
         db=db,
         name = "Test Trait 2",
-        effect = "Test Effect 2"
+        effect = "Test effect 2"
     )
 
     trait3 = traits.create_trait(
         db=db,
         name = "Test Trait 3",
-        effect = "Test Effect 3"
+        effect = "Test effect 3"
     )
 
     retrieved = traits.get_all_traits(db)
@@ -80,9 +101,9 @@ def test_get_all_traits(db):
         "Test Trait 3"
     }
     assert {tr.effect for tr in retrieved} == {
-        "Test Effect 1",
-        "Test Effect 2",
-        "Test Effect 3"
+        "Test effect 1",
+        "Test effect 2",
+        "Test effect 3"
     }
 
 
@@ -100,7 +121,7 @@ def test_update_trait_name(db):
     trait = traits.create_trait(
         db=db,
         name = "Test Trait",
-        effect = "Test Effect"
+        effect = "Test effect"
     )
 
     updated = traits.update_trait(
@@ -110,37 +131,69 @@ def test_update_trait_name(db):
     )
 
     assert updated.name == "New Name"
-    assert updated.effect == "Test Effect"
+    assert updated.effect == "Test effect"
+
+@pytest.mark.parametrize("invalid_name", [None, "   "])
+def test_update_trait_invalid_name(db,invalid_name):
+    """ Test that updating a Trait with an invalid name input raises a ValueError. """
+    trait = traits.create_trait(
+        db=db,
+        name = "Test Trait",
+        effect = "Test effect"
+    )
+
+    with pytest.raises(ValueError):
+        traits.update_trait(
+            db=db,
+            trait_id = trait.id,
+            name=invalid_name,
+        )
 
 def test_update_trait_effect(db):
     """ Test that updates to a Trait record successfully change the effect field. """
     trait = traits.create_trait(
         db=db,
         name = "Test Trait",
-        effect = "Test Effect"
+        effect = "Test effect"
     )
 
     updated = traits.update_trait(
         db=db,
         trait_id = trait.id,
-        effect = "New Effect"
+        effect = "New effect"
     )
 
     assert updated.name == "Test Trait"
-    assert updated.effect == "New Effect"
+    assert updated.effect == "New effect"
+
+@pytest.mark.parametrize("invalid_effect", [None, "   "])
+def test_update_trait_invalid_name(db,invalid_effect):
+    """ Test that updating a Trait with an invalid effect input raises a ValueError. """
+    trait = traits.create_trait(
+        db=db,
+        name = "Test Trait",
+        effect = "Test effect"
+    )
+
+    with pytest.raises(ValueError):
+        traits.update_trait(
+            db=db,
+            trait_id = trait.id,
+            effect=invalid_effect,
+        )
 
 def test_update_trait_duplicate_prevention(db):
     """ Test that a Trait record cannot be updated to have the same name as an existing Trait. """
     trait1 = traits.create_trait(
         db=db,
         name = "Test Trait 1",
-        effect = "Test Effect 1"
+        effect = "Test effect 1"
     )
 
     trait2 = traits.create_trait(
         db=db,
         name = "Test Trait 2",
-        effect = "Test Effect 2"
+        effect = "Test effect 2"
     )
 
     updated = traits.update_trait(
@@ -170,7 +223,7 @@ def test_delete_trait(db):
     trait = traits.create_trait(
         db=db,
         name = "Test Trait",
-        effect = "Test Effect"
+        effect = "Test effect"
     )
 
     result = traits.delete_trait(db, trait.id)
