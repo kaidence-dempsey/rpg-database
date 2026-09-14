@@ -174,9 +174,9 @@ def update_discipline(db, discipline_id, **kwargs):
         if value == "":
             continue
 
-    if key in {"name", "description"}:
-        if not isinstance(value, str) or not value.strip():
-            raise ValueError(f"{key.title()} must be a non-whitespace string.")
+        if key in {"name", "description"}:
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{key.title()} must be a non-whitespace string.")
 
         if key == "anima":
             if value is None or not isinstance(value, bool):

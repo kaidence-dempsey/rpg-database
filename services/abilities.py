@@ -44,8 +44,74 @@ def create_ability(
         tags: A list of Tag objects associated with the Ability.
 
     Returns:
-        The newly created Ability object, or None if an ability with the same name already exists.
+        The newly created Ability object, or None if an ability with the same name already exists, or the associated Discipline doesn't exist.
     """
+    #--------------------------------------
+    # REQUIRED FIELDS INPUT VALIDITY CHECK.
+    #--------------------------------------
+    # whitespace, "", and None are all invalid.
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("Name must be a non-empty string.")
+
+    if not isinstance(effect, str) or not effect.strip():
+        raise ValueError("Effect must be a non-empty string.")
+
+    if not isinstance(has_roll, bool):
+        raise ValueError("Whether the ability requires a roll must be True or False.")
+
+    if partial_effect is not None and (not isinstance(partial_effect, str) or not partial_effect.strip()):
+        raise ValueError("Partial effect must be a non-empty string or None.")
+
+    if crit_effect is not None and (not isinstance(crit_effect, str) or not crit_effect.strip()):
+        raise ValueError("Crit effect must be a non-empty string or None.")
+
+    if (
+        not isinstance(xp_cost, int) 
+        or isinstance(xp_cost, bool)
+        or not isinstance(ap_cost, int)
+        or isinstance(ap_cost, bool)
+        or not isinstance(momentum_cost, int)
+        or isinstance(momentum_cost, bool)
+    ):
+        raise ValueError("Costs must be integers.")
+
+    valid_resource_types = {None, "blood", "resolve", "resonance"}
+
+    if resource_type not in valid_resource_types:
+        raise ValueError("Resource type must be None, 'blood', 'resolve', or 'resonance'.")
+
+    if resource_cost is not None and (not isinstance(resource_cost, int) or isinstance(resource_cost, bool)):
+        raise ValueError("Resource Cost must be None or of type integer.")
+
+    if not isinstance(discipline_id, int) or isinstance(discipline_id, bool):
+        raise ValueError("Discipline ID must be an integer.")
+    
+    #-----------------------
+    # VERIFY BUSINESS LOGIC.
+    #-----------------------
+    
+    if has_roll and (partial_effect is None or crit_effect is None):
+        raise ValueError("Abilities with rolls require partial and critical effects.")
+
+    if not has_roll and (partial_effect is not None or crit_effect is not None):
+        raise ValueError("Abilities without rolls cannot have partial or critical effects.")
+
+    if xp_cost < 1:
+        raise ValueError("XP Cost must be greater than 0. ")
+
+    if ap_cost < 0 :
+        raise ValueError("AP Cost must be 0 or greater.")
+
+    if momentum_cost < 0:
+        raise ValueError("Momentum Cost must be 0 or greater.")
+    
+    if resource_type is not None and resource_cost is None:
+        raise ValueError("A resource type requires a resource cost.")
+
+    if resource_type is None and resource_cost is not None:
+        raise ValueError("A resource cost requires a resource type.")
+
+    # CREATION OF ABILITY OBJECT
     ability = Ability(
         name=name.title(),
         effect=effect,
@@ -60,22 +126,10 @@ def create_ability(
         discipline_id=discipline_id,
     )  
 
-    # Validate Ability rules
-    if has_roll and (partial_effect is None or crit_effect is None):
-        raise ValueError("Abilities with rolls require partial and critical effects.")
-
-    if not has_roll and (partial_effect is not None or crit_effect is not None):
-        raise ValueError("Abilities without rolls cannot have partial or critical effects.")
-
-    if resource_type is not None and resource_cost is None:
-        raise ValueError("A resource type requires a resource cost.")
-
-    if resource_type is None and resource_cost is not None:
-        raise ValueError("A resource cost requires a resource type.")
-
+    # ADD ASSOCIATED TAGS
     ability.tags = tags
 
-
+    # ADD UNLESS NAME IS ALREADY PRESENT IN DATABASE.
     db.add(ability)
     try:
         db.commit()
@@ -192,7 +246,10 @@ def update_ability(db, ability_id, **kwargs):
   
     if not ability:
         return None
-        
+
+    #-----------------------
+    # VALIDATE FIELD NAMES
+    #-----------------------    
     allowed_fields = {
         "name", 
         "effect",
@@ -207,12 +264,78 @@ def update_ability(db, ability_id, **kwargs):
         "discipline_id"
     }
 
+    for key in kwargs:
+        if key not in allowed_fields:
+            raise ValueError(f"Invalid field: {key}")
+
+    #---------------------------------------------
+    # VALIDATE INPUTS AND UPDATE PROVIDED FIELDS
+    #---------------------------------------------          
+    valid_resource_types = {None, "blood", "resolve", "resonance"}
     for key, value in kwargs.items():
-        if key in allowed_fields:
-            setattr(ability,key,value)
-        else:
-             raise ValueError(f"Invalid Field: {key}")
+        if value == "":
+            continue
+
+        if key in {"name", "effect"}:
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{key.title()} must be a non-whitespace string.")           
+
+        if key in {"xp_cost","ap_cost","momentum_cost"}:
+            if not isinstance(value, int) or isinstance(value, bool):
+                raise ValueError(f"{key.title()} must be an integer.")
+
+        if key in {"partial_effect", "crit_effect"}:
+            if value is not None and (not isinstance(value, str) or not value.strip()):
+                raise ValueError(f"{key.title()} must be a non-empty string or None.")
         
+        if key == "has_roll":
+            if not isinstance(value, bool):
+                raise ValueError("Whether the ability requires a roll must be True or False.")
+
+        valid_resource_types = {None, "blood", "resolve", "resonance"}
+
+        if key == "resource_type":
+            if value not in valid_resource_types:
+                raise ValueError("Resource type must be None, 'blood', 'resolve', or 'resonance'.")
+
+        if key == "resource_cost":
+            if value is not None and (not isinstance(value, int) or isinstance(value,bool)):
+                raise ValueError("Resource Cost must be None or of type integer.")                 
+
+        setattr(ability,key,value)
+
+    #-----------------------------------
+    # RESULTING FIELD LOGIC VALIDATION
+    #-----------------------------------
+    if ability.has_roll and (ability.partial_effect is None or ability.crit_effect is None):
+        db.rollback()
+        raise ValueError("Abilities with rolls require partial and critical effects.")
+
+    if not ability.has_roll and (ability.partial_effect is not None or ability.crit_effect is not None):
+        db.rollback()
+        raise ValueError("Abilities without rolls cannot have partial or critical effects.")
+
+    if ability.xp_cost < 1:
+        db.rollback()
+        raise ValueError("XP Cost must be greater than 0.")
+
+    if ability.ap_cost < 0:
+        db.rollback()
+        raise ValueError("AP Cost must be 0 or greater.")
+
+    if ability.momentum_cost < 0:
+        db.rollback()
+        raise ValueError("Momentum Cost must be 0 or greater.")
+
+    if ability.resource_type is not None and ability.resource_cost is None:
+        db.rollback()
+        raise ValueError("A resource type requires a resource cost.")
+
+    if ability.resource_type is None and ability.resource_cost is not None:
+        db.rollback()
+        raise ValueError("A resource cost requires a resource type.")
+
+    # UPDATE UNLESS ENTERED UPDATED NAME IS ALREADY PRESENT IN DATABASE.  
     try:
         db.commit()
         db.refresh(ability)
