@@ -58,49 +58,49 @@ def test_create_anima_without_philosophy(db):
             description = "Test description"
         )
 
-@pytest.mark.parametrize("name", [None, "", "   "])
-def test_create_discipline_invalid_name(db,name):
+@pytest.mark.parametrize("invalid_name", [None, "", "   "])
+def test_create_discipline_invalid_name(db,invalid_name):
     """ Test that creating a Discipline with an invalid name raises a ValueError. """
     with pytest.raises(ValueError):
         disciplines.create_discipline(
             db=db,
-            name=name,
+            name=invalid_name,
             philosophy = None,
             description = "Test description"
         )
 
-@pytest.mark.parametrize("description", [None, "", "   "])
-def test_create_discipline_invalid_description(db,description):
+@pytest.mark.parametrize("invalid_description", [None, "", "   "])
+def test_create_discipline_invalid_description(db,invalid_description):
     """ Test that creating a Discipline with an invalid description raises a ValueError. """
     with pytest.raises(ValueError):
         disciplines.create_discipline(
             db=db,
             name = "Test Discipline",
             philosophy = None,
-            description=description
+            description=invalid_description
         )
 
-@pytest.mark.parametrize("anima", [None, "", "   ", "Test", 1, 0])
-def test_create_discipline_invalid_anima(db,anima):
+@pytest.mark.parametrize("invalid_anima", [None, "", "   ", "Test", 1, 0])
+def test_create_discipline_invalid_anima(db,invalid_anima):
     """  Test that creating a Discipline with an invalid anima raises a ValueError. """
     with pytest.raises(ValueError):
         disciplines.create_discipline(
             db=db,
             name = "Test Discipline",
-            anima=anima,
+            anima=invalid_anima,
             philosophy = None,
             description = "Test description"
         )
 
-@pytest.mark.parametrize("philosophy", ["", "   "])
-def test_create_discipline_invalid_philosophy(db,philosophy):
+@pytest.mark.parametrize("invalid_philosophy", ["", "   "])
+def test_create_discipline_invalid_philosophy(db,invalid_philosophy):
     """  Test that creating a Discipline with an invalid philosophy raises a ValueError. """
     with pytest.raises(ValueError):
         disciplines.create_discipline(
             db=db,
             name = "Test Discipline",
             anima= True,
-            philosophy=philosophy,
+            philosophy=invalid_philosophy,
             description = "Test description"
         )
 
@@ -252,9 +252,9 @@ def test_update_discipline_name(db):
     assert updated.philosophy is None
     assert updated.description == "Test description"
 
-@pytest.mark.parametrize("name", [None, "    "])
-def test_update_discipline_invalid_name(db,name):
-    """ Test that updating a Discipline with invalid name raises a ValueError. """
+@pytest.mark.parametrize("invalid_name", [None, "    "])
+def test_update_discipline_invalid_name(db,invalid_name):
+    """ Test that updating a Discipline with invalid name inputs raise a ValueError. """
     discipline = disciplines.create_discipline(
         db=db,
         name = "Test Discipline",
@@ -266,7 +266,7 @@ def test_update_discipline_invalid_name(db,name):
         disciplines.update_discipline(
             db=db,
             discipline_id = discipline.id,
-            name=name
+            name=invalid_name
         )
 
 def test_update_discipline_name_blank(db):
@@ -309,8 +309,8 @@ def test_update_discipline_description(db):
     assert updated.philosophy is None
     assert updated.description == "New description"
 
-@pytest.mark.parametrize("description", [None, "    "])
-def test_update_discipline_invalid_description(db,description):
+@pytest.mark.parametrize("invalid_description", [None, "    "])
+def test_update_discipline_invalid_description(db,invalid_description):
     """ Test that updating a Discipline with invalid description raises a ValueError. """
     discipline = disciplines.create_discipline(
         db=db,
@@ -323,7 +323,7 @@ def test_update_discipline_invalid_description(db,description):
         disciplines.update_discipline(
             db=db,
             discipline_id = discipline.id,
-            description=description
+            description=invalid_description
         )
 
 def test_update_discipline_description_blank(db):
@@ -362,8 +362,8 @@ def test_update_discipline_invalid_field(db):
             fake_field="Something"
         )
 
-@pytest.mark.parametrize("philosophy", ["New Philosophy", ""])
-def test_update_discipline_anima_true_to_false_fails(db,philosophy):
+@pytest.mark.parametrize("invalid_philosophy", ["New Philosophy", ""])
+def test_update_discipline_anima_true_to_false_fails(db,invalid_philosophy):
     """ Tests that updating anima from True to False without updating philosophy to None raises a ValueError"""
     discipline = disciplines.create_discipline(
         db=db,
@@ -378,7 +378,7 @@ def test_update_discipline_anima_true_to_false_fails(db,philosophy):
             db=db,
             discipline_id = discipline.id,
             anima = False,
-            philosophy = philosophy
+            philosophy = invalid_philosophy
         )
 
 def test_update_discipline_anima_true_to_false_succeeds(db):
@@ -404,8 +404,8 @@ def test_update_discipline_anima_true_to_false_succeeds(db):
     assert updated.philosophy is None
     assert updated.description == "Test description"
 
-@pytest.mark.parametrize("philosophy", [None, ""])
-def test_update_discipline_anima_false_to_true_fails(db,philosophy):
+@pytest.mark.parametrize("invalid_philosophy", [None, ""])
+def test_update_discipline_anima_false_to_true_fails(db,invalid_philosophy):
     """ Tests that updating anima from False to True without updating philosophy with a valid value raises a ValueError"""
     discipline = disciplines.create_discipline(
         db=db,
@@ -420,7 +420,7 @@ def test_update_discipline_anima_false_to_true_fails(db,philosophy):
             db=db,
             discipline_id = discipline.id,
             anima = True,
-            philosophy = philosophy
+            philosophy = invalid_philosophy
         )
 
 def test_update_discipline_anima_false_to_true_succeeds(db):
