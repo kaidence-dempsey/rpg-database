@@ -27,18 +27,26 @@ def create_discipline(db, name, description, anima=False, philosophy=None):
     Raises:
         ValueError: if required field is left blank or field logic is not followed.
     """
-
     #--------------------------------------
     # REQUIRED FIELDS INPUT VALIDITY CHECK.
     #--------------------------------------
     # whitespace, "", and None are all invalid.
-    if not name or not name.strip() or not description or not description.strip(): 
-        raise ValueError("Missing one or more required fields.")
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("Name must be a non-empty string.")
+
+    if not isinstance(description, str) or not description.strip():
+        raise ValueError("Description must be a non-empty string.")
 
     if not isinstance(anima, bool):
         raise ValueError("Anima must be True or False.")
+
+    if philosophy is not None and (not isinstance(philosophy, str) or not philosophy.strip()):
+        raise ValueError("Philosophy must be a non-empty string or None.") 
     
-    if anima and (not philosophy or not philosophy.strip()):
+    #-----------------------
+    # VERIFY BUSINESS LOGIC.
+    #-----------------------
+    if anima and philosophy is None:
         raise ValueError("Anima disciplines require a philosophy.")
     
     if not anima and philosophy is not None:
@@ -159,21 +167,25 @@ def update_discipline(db, discipline_id, **kwargs):
         if key not in allowed_fields:
             raise ValueError(f"Invalid Field: {key}")
 
-    #-----------------------
-    # UPDATE PROVIDED FIELDS
-    #-----------------------
+    #---------------------------------------------
+    # VALIDATE INPUTS AND UPDATE PROVIDED FIELDS
+    #---------------------------------------------
     for key, value in kwargs.items():
         if value == "":
             continue
 
-        if key in {"name", "description"}:
-            if value is None or not value.strip():
-                raise ValueError(f"{key.title()} cannot be whitespace or None.")
+    if key in {"name", "description"}:
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"{key.title()} must be a non-whitespace string.")
 
         if key == "anima":
             if value is None or not isinstance(value, bool):
                 raise ValueError("Anima must be True or False.")
 
+        if key == "philosophy":
+            if value is not None and (not isinstance(value, str) or not value.strip()):
+                raise ValueError("Philosophy must be a non-whitespace string, or None.")
+            
         if key == "name":
             value = value.title()
 

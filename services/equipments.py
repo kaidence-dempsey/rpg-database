@@ -34,17 +34,29 @@ def create_equipment(
     # REQUIRED FIELDS INPUT VALIDITY CHECK.
     #--------------------------------------
     # whitespace, "", and None are all invalid.
-    if not name or not name.strip() or not description or not description.strip(): 
-        raise ValueError("Missing one or more required fields.")
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("Name must be a non-empty string.")
+
+    if not isinstance(description, str) or not description.strip():
+        raise ValueError("Description must be a non-empty string.")
 
     # Non-integer inputs, boolean values, and negative integers are all invalid.
-    if not isinstance(price, int) or isinstance(price, bool) or price < 0:
+    if not isinstance(price, int) or isinstance(price, bool):
         raise ValueError("Price must be a non-negative integer.")
 
-    # Non-integer inputs, boolean values, and negative integers are all invalid.
-    if not isinstance(weight, int) or isinstance(weight, bool) or weight < 0:
+    # Non-integer inputs boolean values are invalid.
+    if not isinstance(weight, int) or isinstance(weight, bool):
         raise ValueError("Weight must be a non-negative integer.")
 
+    #-----------------------
+    # VERIFY BUSINESS LOGIC.
+    #-----------------------
+    if price < 0:
+        raise ValueError("Price must be a non-negative integer.")
+
+    if weight < 0:
+        raise ValueError("Weight must be a non-negative integer.")
+    
     # CREATION OF EQUIPMENT OBJECT    
     equipment = Equipment(
         name=name.title(),
@@ -153,8 +165,8 @@ def update_equipment(db, equipment_id, **kwargs):
             continue
 
         if key in {"name", "description"}:
-            if value is None or not value.strip():
-                raise ValueError(f"{key.title()} cannot be whitespace or None.")
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{key.title()} must be a non-whitespace string.")
 
         if key in {"price", "weight"}:
             if not isinstance(value, int) or isinstance(value, bool) or value < 0:

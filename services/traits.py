@@ -26,8 +26,11 @@ def create_trait(db,name,effect):
     # REQUIRED FIELDS INPUT VALIDITY CHECK.
     #--------------------------------------
     # whitespace, "", and None are all invalid.
-    if not name or not name.strip() or not effect or not effect.strip():
-        raise ValueError("Missing one or more required fields.")
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("Name must be a non-empty string.")
+
+    if not isinstance(effect, str) or not effect.strip():
+        raise ValueError("Effect must be a non-empty string.")
 
     # CREATION OF TRAIT OBJECT
     trait = Trait(
@@ -126,16 +129,16 @@ def update_trait(db, trait_id, **kwargs):
         if key not in allowed_fields:
              raise ValueError(f"Invalid Field: {key}")
 
-    #-----------------------
-    # UPDATE PROVIDED FIELDS
-    #-----------------------
+    #---------------------------------------------
+    # VALIDATE INPUTS AND UPDATE PROVIDED FIELDS
+    #---------------------------------------------
     for key, value in kwargs.items():
         if value == "":
             continue
 
         if key in {"name", "effect"}:
-            if value is None or not value.strip():
-                raise ValueError(f"{key.title()} cannot be whitespace or None.")
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{key.title()} must be a non-whitespace string.")
 
         if key == "name":
             value = value.title()

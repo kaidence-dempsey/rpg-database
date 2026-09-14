@@ -25,8 +25,8 @@ def create_tag(db, name):
     # REQUIRED FIELD INPUT VALIDITY CHECK.
     #--------------------------------------
     # whitespace, "", and None are all invalid.
-    if not name or not name.strip(): 
-        raise ValueError("Missing name.")
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("Name must be a non-empty string.")
 
     #CREATION OF TAG OBJECT
     tag = Tag(
@@ -114,8 +114,8 @@ def update_tag(db, tag_id, new_name):
     #-----------------------
     if new_name == "": # Skipping name field, which is the only field.
         return None
-    elif not new_name or not new_name.strip(): # If name is None or empty whitespace: "   ".
-        raise ValueError("Name cannot be blank or None")
+    elif not isinstance(new_name, str) or not new_name.strip(): # If name is a non-string or empty whitespace: "   ".
+        raise ValueError("Name must be a non-whitespace string.")
 
     # UPDATE TAG OBJECT
     tag.name=new_name.title()
