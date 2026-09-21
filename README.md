@@ -2,7 +2,7 @@
 A Python and SQLAlchemy backend for managing the data and character options of a homebrew tabletop role-playing game system.
 
 This project is being developed as a portfolio project to demonstrate database design, Python development, SQLAlchemy ORM usage,
-CRUD operations, relational data modeling, and application architecture.
+CRUD operations, relational data modeling, automated testing using pytest, and application architecture.
 
 The eventual goal is to provide the backend for a web application where users can browse game content, create and manage characters,
 add homebrew content, and use an integrated dice roller.
