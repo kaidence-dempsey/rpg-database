@@ -1,165 +1,11 @@
 """
-Tests the Ability service layer, including CRUD operations, validation, and relationship constraints.
+Tests the Ability service layer, including Retrieve/Delete operations, validation, and relationship constraints.
 """
 
 import pytest
-from sqlalchemy.exc import IntegrityError
 from services import abilities
 from services import disciplines
 from services import tags
-
-#-------------
-# CREATE TESTS
-#-------------
-def test_create_ability_no_tags(db):
-    """ Test that a new Ability record can be created without associated Tags.  """
-    # Making a Discipline to associate with the Ability
-    discipline = disciplines.create_discipline(
-        db=db,
-        name = "Test Discipline",
-        philosophy = None,
-        description = "Test Description"
-    )
-
-    ability = abilities.create_ability(
-        db=db,
-        name = "Test Ability",
-        effect = "Test Effect",
-        has_roll = False,
-        partial_effect = None,
-        crit_effect = None,
-        xp_cost = 2,
-        ap_cost = 0,
-        momentum_cost = 0,
-        resource_type = None,
-        resource_cost = None,
-        discipline_id = discipline.id,
-        tags = []
-    )
-
-    assert ability.name == "Test Ability"
-    assert ability.effect == "Test Effect"
-    assert ability.has_roll is False
-    assert ability.partial_effect is None
-    assert ability.crit_effect is None
-    assert ability.xp_cost == 2
-    assert ability.ap_cost == 0
-    assert ability.momentum_cost == 0
-    assert ability.resource_type is None
-    assert ability.resource_cost is None
-    assert ability.discipline_id == discipline.id
-    assert ability.tags == []
-
-def test_create_ability_with_tags(db):
-    """ Test that a new Ability record can be created with associated pre-existing Tags.  """
-    # Creating a Discipline to associate with the Ability
-    discipline = disciplines.create_discipline(
-        db=db,
-        name = "Test Discipline",
-        philosophy = None,
-        description = "Test Description"
-    )
-
-    # Creating existing Tags to associate with the Ability
-    tag1 = tags.create_tag(db=db, name = "Test Tag 1")
-    tag2 = tags.create_tag(db=db, name = "Test Tag 2")
-
-    ability = abilities.create_ability(
-        db=db,
-        name = "Test Ability",
-        effect = "Test Effect",
-        has_roll = False,
-        partial_effect = None,
-        crit_effect = None,
-        xp_cost = 2,
-        ap_cost = 0,
-        momentum_cost = 0,
-        resource_type = None,
-        resource_cost = None,
-        discipline_id = discipline.id,
-        tags = [tag1, tag2]
-    )
-
-    assert ability.name == "Test Ability"
-    assert ability.effect == "Test Effect"
-    assert ability.has_roll is False
-    assert ability.partial_effect is None
-    assert ability.crit_effect is None
-    assert ability.xp_cost == 2
-    assert ability.ap_cost == 0
-    assert ability.momentum_cost == 0
-    assert ability.resource_type is None
-    assert ability.resource_cost is None
-    assert ability.discipline_id == discipline.id
-    assert {tag.name for tag in ability.tags} == {
-        "Test Tag 1",
-        "Test Tag 2"
-    }
-
-def test_create_ability_nonexistent_discipline(db):
-    """ Test that creating an Ability with a nonexistent Discipline ID returns None  """
-
-    result = abilities.create_ability(
-        db=db,
-        name = "Test Ability",
-        effect = "Test Effect",
-        has_roll = False,
-        partial_effect = None,
-        crit_effect = None,
-        xp_cost = 2,
-        ap_cost = 0,
-        momentum_cost = 0,
-        resource_type = None,
-        resource_cost = None,
-        discipline_id = 100,
-        tags = []
-    )
-
-    assert result is None
-
-def test_create_ability_duplicate_prevention(db):
-    """ Test that a new Ability record cannot have the same name as an existing Ability. """
-    # Creating a Discipline to associate with the Ability
-    discipline = disciplines.create_discipline(
-        db=db,
-        name = "Test Discipline",
-        philosophy = None,
-        description = "Test Description"
-    )
-
-    abilities.create_ability(
-        db=db,
-        name = "Test Ability",
-        effect = "Test Effect",
-        has_roll = False,
-        partial_effect = None,
-        crit_effect = None,
-        xp_cost = 2,
-        ap_cost = 0,
-        momentum_cost = 0,
-        resource_type = None,
-        resource_cost = None,
-        discipline_id = discipline.id,
-        tags = []
-    )
-
-    duplicate = abilities.create_ability(
-        db=db,
-        name = "Test Ability",
-        effect = "Test Effect",
-        has_roll = False,
-        partial_effect = None,
-        crit_effect = None,
-        xp_cost = 2,
-        ap_cost = 0,
-        momentum_cost = 0,
-        resource_type = None,
-        resource_cost = None,
-        discipline_id = discipline.id,
-        tags = []   
-    )
-
-    assert duplicate is None
 
 #-----------------
 # RETRIEVAL TESTS
@@ -492,35 +338,45 @@ def test_get_abilities_by_no_matching_tag(db):
 
     assert result == []
 
-#-----------------
-# UPDATE TESTS
-#-----------------
-# def test_update_ability(db):
-#   This will test updating the name, effect, xp_cost, ap_cost, momentum_cost.
+#---------------
+# DELETION TESTS
+#---------------
+def test_delete_ability(db):
+    """ Test that an Ability record can be deleted.  """
+    # Creating a Discipline to associate with the Ability
+    discipline = disciplines.create_discipline(
+        db=db,
+        name = "Test Discipline",
+        philosophy = None,
+        description = "Test Description"
+    )
 
-# def test_update_ability_discipline_id(db):
-#   This will test updating associated discipline.
+    ability = abilities.create_ability(
+        db=db,
+        name = "Test Ability",
+        effect = "Test Effect",
+        has_roll = False,
+        partial_effect = None,
+        crit_effect = None,
+        xp_cost = 2,
+        ap_cost = 0,
+        momentum_cost = 0,
+        resource_type = None,
+        resource_cost = None,
+        discipline_id = discipline.id,
+        tags = []
+    )
 
-# def test_update_ability_nonexistent_discipline_id(db):
-#   This will test updating the associated discipline id wont work if the new discipline is invalid.
+    result = abilities.delete_ability(db, ability.id)
 
-# def test_update_ability_xp_cost_negative(db):
-#   This will test that an XP Cost cannot be negative.
+    assert result is True
 
-# def test_update_ability_xp_cost_zero(db):
-#   This will test that an XP Cost cannot be 0.
+    deleted = abilities.get_ability_by_id(db, ability.id)
 
-# def test_update_ability_ap_cost_negative(db):
-#   This will test that an AP Cost cannot be negative.
+    assert deleted is None
 
-# def test_update_ability_momentum_cost_negative(db):
-#   This will test that a Momentum Cost cannot be negative.
+def test_delete_nonexistent_ability(db):
+    """ Tests that deleting a nonexistent Ability returns False. """
+    result = abilities.delete_ability(db, 100)
 
-# def test_update_ability_resource_type_and_cost_from_none(db):
-#   This will test updating both resource type and cost from None will work.
-
-# def test_update_ability_resource_type_and_cost_to_none(db):
-#   This will test updating both resource type and cost to None will work.
-
-# def test_update_ability_resource_type_from_none_without_cost(db):
-#   This will test updating just the resource type from None will fail, as the cost would still be None
+    assert result is False

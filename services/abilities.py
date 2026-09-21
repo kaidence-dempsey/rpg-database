@@ -5,6 +5,7 @@ Ability records from the database.
 
 from models.ability import Ability
 from models.tag import Tag
+from services.disciplines import get_discipline_by_id
 from sqlalchemy.exc import IntegrityError
 
 #-----------
@@ -74,7 +75,6 @@ def create_ability(
         or isinstance(momentum_cost, bool)
     ):
         raise ValueError("Costs must be integers.")
-
     valid_resource_types = {None, "blood", "resolve", "resonance"}
 
     if resource_type not in valid_resource_types:
@@ -105,11 +105,14 @@ def create_ability(
     if momentum_cost < 0:
         raise ValueError("Momentum Cost must be 0 or greater.")
     
-    if resource_type is not None and resource_cost is None:
-        raise ValueError("A resource type requires a resource cost.")
+    if resource_type is not None and (resource_cost is None or resource_cost < 1):
+        raise ValueError("A resource type requires a resource cost greater than 0.")
 
     if resource_type is None and resource_cost is not None:
         raise ValueError("A resource cost requires a resource type.")
+
+    if get_discipline_by_id(db, discipline_id) is None:
+        raise ValueError("Discipline ID is invalid.")
 
     # CREATION OF ABILITY OBJECT
     ability = Ability(
@@ -280,7 +283,7 @@ def update_ability(db, ability_id, **kwargs):
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{key.title()} must be a non-whitespace string.")           
 
-        if key in {"xp_cost","ap_cost","momentum_cost"}:
+        if key in {"xp_cost","ap_cost","momentum_cost", "discipline_id"}:
             if not isinstance(value, int) or isinstance(value, bool):
                 raise ValueError(f"{key.title()} must be an integer.")
 
@@ -327,13 +330,16 @@ def update_ability(db, ability_id, **kwargs):
         db.rollback()
         raise ValueError("Momentum Cost must be 0 or greater.")
 
-    if ability.resource_type is not None and ability.resource_cost is None:
+    if ability.resource_type is not None and (ability.resource_cost is None or ability.resource_cost < 1):
         db.rollback()
         raise ValueError("A resource type requires a resource cost.")
 
     if ability.resource_type is None and ability.resource_cost is not None:
         db.rollback()
         raise ValueError("A resource cost requires a resource type.")
+
+    if get_discipline_by_id(db, ability.discipline_id) is None:
+        raise ValueError("Discipline ID is invalid. ")
 
     # UPDATE UNLESS ENTERED UPDATED NAME IS ALREADY PRESENT IN DATABASE.  
     try:
