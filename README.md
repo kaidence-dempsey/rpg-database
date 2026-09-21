@@ -10,7 +10,7 @@ add homebrew content, and use an integrated dice roller.
 ## Current Status
 **In active development — V1 implementation underway.**
 
-The core database backend is implemented and has completed manual CRUD testing. Automated CRUD testing is currently being implemented with pytest, with Discipline service tests completed and additional service tests in progress.
+The core database backend is implemented and has completed manual CRUD testing. Automated CRUD testing is currently being implemented with pytest, with service tests for Disciplines, Tags, Traits, Equipment, and Abilities completed, and additional service tests in progress.
 
 ### Implemented
 - SQLAlchemy ORM database models
@@ -89,11 +89,15 @@ rpg-database/
 │   └──weapons.py  
 │
 ├──tests/
-│   ├──__init__.py
-│   ├──conftest.py
-│   ├──test_disciplines.py
-│   ├──test_equipments.py
-│   ├──test_tags.py
+│   ├──test_abilities/
+│   │  ├──test_create.py
+│   │  │  test_retrieve_delete.py
+│   │  └── test_update.py
+│   │  __init__.py
+│   │  conftest.py
+│   │  test_disciplines.py
+│   │  test_equipments.py
+│   │  test_tags.py
 │   └──test_traits.py
 │
 ├──database.py
