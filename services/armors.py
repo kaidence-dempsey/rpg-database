@@ -38,6 +38,49 @@ def create_armor(
     Returns:
         The newly created Armor object, or None if an armor with the same name already exists.
     """
+    #--------------------------------------
+    # REQUIRED FIELDS INPUT VALIDITY CHECK.
+    #--------------------------------------
+    # whitespace, "", and None are all invalid.
+    if not isinstance(name, str) or not name.strip():
+        raise ValueError("Name must be a non-empty string.")
+
+    if not isinstance(description, str) or not name.strip():
+        raise ValueError("Description must be a non-empty string.")
+
+    valid_armor_types = {"light", "medium", "heavy"}
+
+    if armor_type not in valid_armor_types:
+        raise ValueError("Armor type must be light, medium, or heavy.")
+
+    if (
+        not isinstance(dr, int) 
+        or isinstance(dr, bool)
+        or not isinstance(move_penalty, int)
+        or isinstance(move_penalty, bool)
+        or not isinstance(weight, int)
+        or isinstance(weight, bool)
+        or not isinstance(price, int)
+        or isinstance(price, bool)
+    ):
+        raise ValueError("Value must be an integer.")
+
+    #-----------------------
+    # VERIFY BUSINESS LOGIC.
+    #-----------------------
+    if dr < 0:
+        raise ValueError("DR must be 0 or greater.")
+
+    if move_penalty < 0:
+        raise ValueError("Move penalty must be 0 or greater.")
+
+    if weight < 0:
+        raise ValueError("Weight must be 0 or greater.")
+
+    if price < 0:
+        raise ValueError("Price must be 0 or greater.")
+
+    # CREATION OF ARMOR OBJECT
     armor = Armor(
         name=name.title(),
         description=description,
@@ -48,8 +91,10 @@ def create_armor(
         price=price
     )
 
+    # ADD ASSOCIATED TRAITS
     armor.traits = traits
 
+    # ADD UNLESS NAME IS ALREADY PRESENT IN DATABASE.
     db.add(armor)
     try:
         db.commit()
@@ -150,7 +195,10 @@ def update_armor(db,armor_id,**kwargs):
 
     if not armor:
         return None
-    
+
+    #-----------------------
+    # VALIDATE FIELD NAMES
+    #-----------------------    
     allowed_fields = {
         "name",
         "description",
@@ -161,12 +209,52 @@ def update_armor(db,armor_id,**kwargs):
         "price",
     }
 
-    for key, value in kwargs.items():
-        if key in allowed_fields:
-            setattr(armor,key,value)
-        else:
+    for key in kwargs:
+        if key not in allowed_fields:
             raise ValueError(f"Invalid field: {key}")
-    
+
+    #---------------------------------------------
+    # VALIDATE INPUTS AND UPDATE PROVIDED FIELDS
+    #---------------------------------------------
+    valid_armor_types = {"light", "medium", "heavy"}
+    for key, value in kwargs.items():
+        if value == "":
+            continue
+
+        if key in {"name", "effect"}:
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{key.title()} must be a non-whitespace string.")
+
+        if key == "armor_type":
+            if value not in valid_armor_types:
+                raise ValueError("Armor type must be either light, medium, or heavy.")
+
+        if key in {"dr", "move_penalty", "weight", "price"}:
+            if not isinstance(value, int) or isinstance(value, bool):
+                raise ValueError(f"{key.title()} must be an integer.")
+
+        setattr(armor,key,value)               
+
+    #-----------------------------------
+    # RESULTING FIELD LOGIC VALIDATION
+    #-----------------------------------
+    if armor.dr < 0:
+        db.rollback()
+        raise ValueError("DR must be 0 or greater.")
+
+    if armor.move_penalty < 0:
+        db.rollback()
+        raise ValueError("Move penalty must be 0 or greater.")
+
+    if armor.weight < 0:
+        db.rollback()
+        raise ValueError("Weight must be 0 or greater.")
+
+    if armor.price < 0:
+        db.rollback()
+        raise ValueError("Price must be 0 or greater.")
+
+    # UPDATE UNLESS ENTERED UPDATED NAME IS ALREADY PRESENT IN DATABASE.     
     try:
         db.commit()
         db.refresh(armor)

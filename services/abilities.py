@@ -75,6 +75,7 @@ def create_ability(
         or isinstance(momentum_cost, bool)
     ):
         raise ValueError("Costs must be integers.")
+
     valid_resource_types = {None, "blood", "resolve", "resonance"}
 
     if resource_type not in valid_resource_types:
